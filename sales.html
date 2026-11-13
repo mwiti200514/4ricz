@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sales Management System</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #edf1f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0002;
+}
+
+h2 {
+    text-align: center;
+    color: #123c69;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 7px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 12px;
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #087c46;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.delete {
+    background: #c62828;
+}
+
+.summary {
+    background: #e4f5e9;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 7px;
+}
+
+.summary p {
+    font-size: 17px;
+}
+
+textarea {
+    width: 100%;
+    height: 220px;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    font-family: monospace;
+}
+
+.profit {
+    color: green;
+    font-weight: bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>SALES MANAGEMENT SYSTEM</h2>
+
+<h3>1. Register Product</h3>
+
+<input type="text" id="productName"
+placeholder="Product Name">
+
+<input type="number" id="buyPrice"
+placeholder="Buying Price (KSh)" min="0" step="0.01">
+
+<input type="number" id="sellPrice"
+placeholder="Selling Price (KSh)" min="0" step="0.01">
+
+<button onclick="addProduct()">REGISTER PRODUCT</button>
+
+<hr>
+
+<h3>2. Record Sale</h3>
+
+<select id="productSelect">
+<option value="">Select Product</option>
+</select>
+
+<input type="number" id="quantity"
+placeholder="Quantity Sold" min="1">
+
+<button onclick="recordSale()">RECORD SALE</button>
+
+<hr>
+
+<h3>3. Sales Summary</h3>
+
+<div class="summary">
+
+<p>Total Products Sold: <b id="units">0</b></p>
+
+<p>Total Sales: KSh <b id="sales">0.00</b></p>
+
+<p>Total Buying Cost: KSh <b id="cost">0.00</b></p>
+
+<p class="profit">Total Profit: KSh <span id="profit">0.00</span></p>
+
+</div>
+
+<h3>4. Sales Records</h3>
+
+<textarea id="records" readonly
+placeholder="Sales records will appear here..."></textarea>
+
+<button onclick="downloadReport()">
+DOWNLOAD SALES REPORT
+</button>
+
+<button class="delete" onclick="clearSales()">
+CLEAR SALES RECORDS
+</button>
+
+</div>
+
+<script>
+
+let products = JSON.parse(localStorage.getItem("salesProducts") || "[]");
+let salesRecords = JSON.parse(localStorage.getItem("salesRecords") || "[]");
+
+function saveData() {
+    localStorage.setItem("salesProducts", JSON.stringify(products));
+    localStorage.setItem("salesRecords", JSON.stringify(salesRecords));
+}
+
+function addProduct() {
+
+    let name = document.getElementById("productName").value.trim();
+    let buy = Number(document.getElementById("buyPrice").value);
+    let sell = Number(document.getElementById("sellPrice").value);
+
+    if (!name ||
+        document.getElementById("buyPrice").value === "" ||
+        document.getElementById("sellPrice").value === "" ||
+        buy < 0 || sell < 0) {
+        alert("Enter valid product details!");
+        return;
+    }
+
+    products.push({
+        name: name,
+        buy: buy,
+        sell: sell
+    });
+
+    saveData();
+    updateProducts();
+
+    document.getElementById("productName").value = "";
+    document.getElementById("buyPrice").value = "";
+    document.getElementById("sellPrice").value = "";
+
+    alert("Product registered successfully!");
+}
+
+function updateProducts() {
+
+    let select = document.getElementById("productSelect");
+
+    select.innerHTML = '<option value="">Select Product</option>';
+
+    products.forEach((product, index) => {
+
+        let option = document.createElement("option");
+        option.value = index;
+        option.textContent =
+            product.name + " - KSh " + product.sell.toFixed(2);
+
+        select.appendChild(option);
+
+    });
+}
+
+function recordSale() {
+
+    let index = document.getElementById("productSelect").value;
+    let quantity = Number(document.getElementById("quantity").value);
+
+    if (index === "" || !Number.isInteger(quantity) || quantity <= 0) {
+        alert("Select a product and enter a valid quantity!");
+        return;
+    }
+
+    let product = products[index];
+
+    let totalSale = product.sell * quantity;
+    let totalCost = product.buy * quantity;
+    let profit = totalSale - totalCost;
+
+    let record = {
+        name: product.name,
+        quantity: quantity,
+        sell: product.sell,
+        cost: totalCost,
+        total: totalSale,
+        profit: profit,
+        date: new Date().toLocaleString()
+    };
+
+    salesRecords.push(record);
+
+    saveData();
+    updateSummary();
+
+    document.getElementById("quantity").value = "";
+
+    alert("Sale recorded successfully!");
+}
+
+function updateSummary() {
+
+    let units = 0;
+    let sales = 0;
+    let cost = 0;
+    let profit = 0;
+
+    let output = "";
+
+    salesRecords.forEach(record => {
+
+        units += record.quantity;
+        sales += record.total;
+        cost += record.cost;
+        profit += record.profit;
+
+        output +=
+            "PRODUCT: " + record.name + "\n" +
+            "QUANTITY: " + record.quantity + "\n" +
+            "SELLING PRICE: KSh " + record.sell.toFixed(2) + "\n" +
+            "TOTAL SALES: KSh " + record.total.toFixed(2) + "\n" +
+            "TOTAL COST: KSh " + record.cost.toFixed(2) + "\n" +
+            "PROFIT: KSh " + record.profit.toFixed(2) + "\n" +
+            "DATE: " + record.date + "\n" +
+            "------------------------------\n";
+
+    });
+
+    document.getElementById("units").textContent = units;
+    document.getElementById("sales").textContent = sales.toFixed(2);
+    document.getElementById("cost").textContent = cost.toFixed(2);
+    document.getElementById("profit").textContent = profit.toFixed(2);
+
+    document.getElementById("records").value =
+        output || "No sales recorded yet.";
+}
+
+function downloadReport() {
+
+    if (salesRecords.length === 0) {
+        alert("No sales records to download!");
+        return;
+    }
+
+    let report = document.getElementById("records").value;
+
+    let blob = new Blob([report], {type: "text/plain"});
+    let url = URL.createObjectURL(blob);
+
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = "sales-report.txt";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function clearSales() {
+
+    if (confirm("Are you sure you want to clear all sales records?")) {
+
+        salesRecords = [];
+
+        saveData();
+        updateSummary();
+    }
+}
+
+updateProducts();
+updateSummary();
+
+</script>
+
+</body>
+</html>
