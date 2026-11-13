@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Management System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #e9eef5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #123c69;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            box-sizing: border-box;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 12px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            background: #087c46;
+            cursor: pointer;
+        }
+
+        .delete {
+            background: #d62828;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .summary {
+            background: #e1f3e8;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>📦 STOCK MANAGEMENT SYSTEM</h2>
+
+    <h3>Add New Stock Item</h3>
+
+    <input type="text" id="name"
+           placeholder="Enter Product Name">
+
+    <input type="number" id="quantity"
+           placeholder="Enter Quantity" min="1">
+
+    <input type="number" id="buying"
+           placeholder="Buying Price" min="0" step="0.01">
+
+    <input type="number" id="selling"
+           placeholder="Selling Price" min="0" step="0.01">
+
+    <button onclick="addStock()">ADD TO STOCK</button>
+
+    <hr>
+
+    <h3>Search Stock</h3>
+
+    <input type="text" id="search"
+           placeholder="Search product..."
+           oninput="displayStock()">
+
+    <h3>Available Stock Items</h3>
+
+    <textarea id="stockDisplay" readonly
+    placeholder="Stock items will appear here..."></textarea>
+
+    <div class="summary">
+        <h3>Stock Summary</h3>
+        <p>Total Products: <span id="totalProducts">0</span></p>
+        <p>Total Units: <span id="totalUnits">0</span></p>
+        <p>Total Stock Value: KSh <span id="totalValue">0.00</span></p>
+    </div>
+
+    <button class="delete" onclick="clearStock()">
+        CLEAR ALL STOCK
+    </button>
+
+</div>
+
+<script>
+
+let stock = JSON.parse(localStorage.getItem("myStock") || "[]");
+
+function addStock() {
+
+    let name = document.getElementById("name").value.trim();
+    let quantity = Number(document.getElementById("quantity").value);
+    let buying = Number(document.getElementById("buying").value);
+    let selling = Number(document.getElementById("selling").value);
+
+    if (!name || document.getElementById("quantity").value === ""
+        || document.getElementById("buying").value === ""
+        || document.getElementById("selling").value === ""
+        || !Number.isInteger(quantity) || quantity <= 0
+        || buying < 0 || selling < 0) {
+
+        alert("Please enter valid stock details!");
+        return;
+    }
+
+    stock.push({
+        name: name,
+        quantity: quantity,
+        buying: buying,
+        selling: selling
+    });
+
+    localStorage.setItem("myStock", JSON.stringify(stock));
+
+    document.getElementById("name").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("buying").value = "";
+    document.getElementById("selling").value = "";
+
+    displayStock();
+
+    alert("Item successfully added to stock!");
+}
+
+function displayStock() {
+
+    let search = document.getElementById("search").value.toLowerCase();
+
+    let output = "";
+    let totalUnits = 0;
+    let totalValue = 0;
+    let totalProducts = 0;
+
+    stock.forEach((item, index) => {
+
+        if (item.name.toLowerCase().includes(search)) {
+
+            output +=
+                "PRODUCT: " + item.name + "\n" +
+                "QUANTITY: " + item.quantity + "\n" +
+                "BUYING PRICE: KSh " + item.buying.toFixed(2) + "\n" +
+                "SELLING PRICE: KSh " + item.selling.toFixed(2) + "\n" +
+                "STOCK VALUE: KSh " +
+                (item.quantity * item.buying).toFixed(2) + "\n" +
+                "------------------------------\n";
+
+            totalUnits += item.quantity;
+            totalValue += item.quantity * item.buying;
+            totalProducts++;
+        }
+
+    });
+
+    document.getElementById("stockDisplay").value =
+        output || "No stock items found.";
+
+    document.getElementById("totalProducts").textContent =
+        totalProducts;
+
+    document.getElementById("totalUnits").textContent =
+        totalUnits;
+
+    document.getElementById("totalValue").textContent =
+        totalValue.toFixed(2);
+}
+
+function clearStock() {
+
+    if (confirm("Are you sure you want to delete ALL stock?")) {
+
+        stock = [];
+
+        localStorage.removeItem("myStock");
+
+        displayStock();
+    }
+}
+
+displayStock();
+
+</script>
+
+</body>
+</html>
