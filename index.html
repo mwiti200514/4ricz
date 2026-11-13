@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> pazuri butchery Sales and Stock Management System</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    margin: 0;
+    padding: 20px;
+    color: #1e293b;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+header {
+    background: #14532d;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+h2 {
+    color: #14532d;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+button {
+    padding: 11px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 5px 3px;
+}
+
+.add-btn {
+    background: #15803d;
+    color: white;
+}
+
+.report-btn {
+    background: #2563eb;
+    color: white;
+}
+
+.reset-btn {
+    background: #dc2626;
+    color: white;
+}
+
+.copy-btn {
+    background: #475569;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    overflow-wrap: anywhere;
+}
+
+th, td {
+    padding: 11px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #14532d;
+    color: white;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.card {
+    background: #ecfdf5;
+    padding: 18px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.card h3 {
+    margin: 5px 0;
+    color: #15803d;
+}
+
+textarea {
+    width: 100%;
+    min-height: 260px;
+    padding: 15px;
+    border: 1px solid #94a3b8;
+    border-radius: 7px;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.low-stock {
+    color: red;
+    font-weight: bold;
+}
+
+@media(max-width: 650px) {
+    .form-grid, .summary {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 12px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h1> 4ricz SALES & STOCK MANAGEMENT</h1>
+    <p>Inventory, Sales and Profit Calculator</p><br>
+  <header  class="header"> <span class="logo" style="background-color: red" aria-hidden="true"></span><a class="student-link" href="sales calc.html">sales calculator</a><a class="header-cta"</header><b><u><br>
+  <header  class="header"> <span class="logo" style="background-color: red" aria-hidden="true"></span><a class="student-link" href="stock management.html">stock management</a><a class="header-cta"</header><b><br>
+
+</header>
+
+<h2>1. Enter Product Details</h2>
+
+<div class="form-grid">
+
+    <div>
+        <label>Product Name</label>
+        <input type="text" id="product"
+        placeholder="Enter product name">
+    </div>
+
+    <div>
+        <label>Available Stock</label>
+        <input type="number" id="stock"
+        min="0" placeholder="Enter stock quantity">
+    </div>
+
+    <div>
+        <label>Buying Price Per Unit</label>
+        <input type="number" id="cost"
+        min="0" step="0.01" placeholder="Buying price">
+    </div>
+
+    <div>
+        <label>Selling Price Per Unit</label>
+        <input type="number" id="price"
+        min="0" step="0.01" placeholder="Selling price">
+    </div>
+
+    <div>
+        <label>Expected Sales Percentage (%)</label>
+        <input type="number" id="percentage"
+        min="0" max="100" value="80">
+    </div>
+
+    <div>
+        <label>Low Stock Alert Level</label>
+        <input type="number" id="alert"
+        min="0" value="10">
+    </div>
+
+</div>
+
+<br>
+
+<button class="add-btn" onclick="addProduct()">
+    Add Product
+</button>
+
+<button class="report-btn" onclick="generateReport()">
+    Generate Sales Report
+</button>
+
+<button class="reset-btn" onclick="resetSystem()">
+    Reset Inputs
+</button>
+
+<h2>2. Stock Inventory</h2>
+
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr>
+    <th>Product</th>
+    <th>Stock</th>
+    <th>Cost</th>
+    <th>Price</th>
+    <th>Expected Sold</th>
+    <th>Remaining</th>
+    <th>Action</th>
+</tr>
+</thead>
+
+<tbody id="inventory"></tbody>
+</table>
+</div>
+
+<h2>3. Sales Summary</h2>
+
+<div class="summary">
+
+    <div class="card">
+        <p>Total Products</p>
+        <h3 id="totalProducts">0</h3>
+    </div>
+
+    <div class="card">
+        <p>Estimated Revenue</p>
+        <h3 id="revenue">0.00</h3>
+    </div>
+
+    <div class="card">
+        <p>Estimated Gross Profit</p>
+        <h3 id="profit">0.00</h3>
+    </div>
+
+    <div class="card">
+        <p>Estimated Units Sold</p>
+        <h3 id="unitsSold">0</h3>
+    </div>
+
+    <div class="card">
+        <p>Remaining Stock</p>
+        <h3 id="remaining">0</h3>
+    </div>
+
+    <div class="card">
+        <p>Low Stock Products</p>
+        <h3 id="lowStock">0</h3>
+    </div>
+
+</div>
+
+<h2>4. Sales Report Output</h2>
+
+<textarea id="output"
+readonly
+placeholder="Your sales report will appear here..."></textarea>
+
+<br><br>
+
+<button class="copy-btn" onclick="copyReport()">
+    Copy Report
+</button>
+
+<button class="report-btn" onclick="window.print()">
+    Print Report
+</button>
+
+</div>
+
+<script>
+
+// Store products
+let products = [];
+
+function money(value) {
+    return Number(value).toLocaleString(
+        "en-KE",
+        {minimumFractionDigits: 2,
+         maximumFractionDigits: 2}
+    );
+}
+
+// Add product
+function addProduct() {
+
+    const name = document.getElementById("product").value.trim();
+    const stock = Number(document.getElementById("stock").value);
+    const cost = Number(document.getElementById("cost").value);
+    const price = Number(document.getElementById("price").value);
+    const percentage = Number(document.getElementById("percentage").value);
+    const alert = Number(document.getElementById("alert").value);
+
+    if (
+        !name ||
+        document.getElementById("stock").value === "" ||
+        document.getElementById("cost").value === "" ||
+        document.getElementById("price").value === "" ||
+        document.getElementById("percentage").value === "" ||
+        document.getElementById("alert").value === ""
+    ) {
+        alertUser("Please fill in all fields.");
+        return;
+    }
+
+    if (
+        !Number.isFinite(stock) ||
+        !Number.isFinite(cost) ||
+        !Number.isFinite(price) ||
+        !Number.isFinite(percentage) ||
+        !Number.isFinite(alert) ||
+        stock < 0 || cost < 0 || price < 0 ||
+        percentage < 0 || percentage > 100 ||
+        alert < 0
+    ) {
+        alertUser("Please enter valid positive values. Sales percentage must be 0-100.");
+        return;
+    }
+
+    const existing = products.find(
+        p => p.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existing) {
+        alertUser("This product already exists. Delete it first or use a different name.");
+        return;
+    }
+
+    products.push({
+        name,
+        stock,
+        cost,
+        price,
+        percentage,
+        alert
+    });
+
+    clearInputs();
+    updateSystem();
+}
+
+// Display alert
+function alertUser(message) {
+    window.alert(message);
+}
+
+// Clear input fields
+function clearInputs() {
+    document.getElementById("product").value = "";
+    document.getElementById("stock").value = "";
+    document.getElementById("cost").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("percentage").value = 80;
+    document.getElementById("alert").value = 10;
+}
+
+// Calculate estimated sales
+function calculate(p) {
+
+    const sold = Math.min(
+        p.stock,
+        Math.floor(p.stock * p.percentage / 100)
+    );
+
+    const remaining = p.stock - sold;
+    const revenue = sold * p.price;
+    const totalCost = sold * p.cost;
+    const profit = revenue - totalCost;
+
+    return {
+        sold,
+        remaining,
+        revenue,
+        totalCost,
+        profit
+    };
+}
+
+// Update inventory and summary
+function updateSystem() {
+
+    const inventory = document.getElementById("inventory");
+
+    inventory.innerHTML = "";
+
+    let totalRevenue = 0;
+    let totalProfit = 0;
+    let totalSold = 0;
+    let totalRemaining = 0;
+    let lowStockCount = 0;
+
+    products.forEach((p, index) => {
+
+        const result = calculate(p);
+
+        totalRevenue += result.revenue;
+        totalProfit += result.profit;
+        totalSold += result.sold;
+        totalRemaining += result.remaining;
+
+        if (result.remaining <= p.alert) {
+            lowStockCount++;
+        }
+
+        const row = document.createElement("tr");
+
+        const values = [
+            p.name,
+            p.stock,
+            money(p.cost),
+            money(p.price),
+            result.sold,
+            result.remaining
+        ];
+
+        values.forEach((value, i) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+
+            if (i === 5 && result.remaining <= p.alert) {
+                cell.className = "low-stock";
+            }
+
+            row.appendChild(cell);
+        });
+
+        const action = document.createElement("td");
+        const deleteButton = document.createElement("button");
+
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "reset-btn";
+        deleteButton.onclick = () => {
+            products.splice(index, 1);
+            updateSystem();
+        };
+
+        action.appendChild(deleteButton);
+        row.appendChild(action);
+
+        inventory.appendChild(row);
+    });
+
+    document.getElementById("totalProducts").textContent =
+        products.length;
+
+    document.getElementById("revenue").textContent =
+        money(totalRevenue);
+
+    document.getElementById("profit").textContent =
+        money(totalProfit);
+
+    document.getElementById("unitsSold").textContent =
+        totalSold;
+
+    document.getElementById("remaining").textContent =
+        totalRemaining;
+
+    document.getElementById("lowStock").textContent =
+        lowStockCount;
+}
+
+// Generate report
+function generateReport() {
+
+    if (products.length === 0) {
+        alertUser("Please add products first.");
+        return;
+    }
+
+    let report = "";
+    let revenue = 0;
+    let profit = 0;
+
+    report += "SALES AND STOCK MANAGEMENT REPORT\n";
+    report += "====================================\n";
+    report += "Date: " + new Date().toLocaleString() + "\n\n";
+
+    products.forEach(p => {
+
+        const r = calculate(p);
+
+        revenue += r.revenue;
+        profit += r.profit;
+
+        report += "PRODUCT: " + p.name + "\n";
+        report += "Available Stock: " + p.stock + "\n";
+        report += "Expected Sales: " + p.percentage + "%\n";
+        report += "Estimated Units Sold: " + r.sold + "\n";
+        report += "Remaining Stock: " + r.remaining + "\n";
+        report += "Buying Price: " + money(p.cost) + "\n";
+        report += "Selling Price: " + money(p.price) + "\n";
+        report += "Estimated Revenue: " + money(r.revenue) + "\n";
+        report += "Estimated Gross Profit: " + money(r.profit) + "\n";
+        report += "------------------------------------\n";
+    });
+
+    report += "\nTOTAL ESTIMATED REVENUE: " + money(revenue);
+    report += "\nTOTAL ESTIMATED GROSS PROFIT: " + money(profit);
+    report += "\n====================================";
+
+    document.getElementById("output").value = report;
+}
+
+// Copy report
+function copyReport() {
+
+    const output = document.getElementById("output");
+
+    if (!output.value) {
+        alertUser("Generate a report first.");
+        return;
+    }
+
+    output.select();
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(output.value)
+            .then(() => alertUser("Report copied successfully."))
+            .catch(() => {
+                document.execCommand("copy");
+                alertUser("Report copied.");
+            });
+    } else {
+        document.execCommand("copy");
+        alertUser("Report copied.");
+    }
+}
+
+// Reset input fields
+function resetSystem() {
+
+    if (confirm("Clear all products and reset the system?")) {
+        products = [];
+        clearInputs();
+        document.getElementById("output").value = "";
+        updateSystem();
+    }
+}
+
+updateSystem();
+
+</script>
+
+</body>
+</html>
